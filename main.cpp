@@ -16,12 +16,14 @@ int strings_cmp_callback(const string& str1,const string& str2) {
 }
 
 int main(int argc, char** argv) {
+    cout << "Creating tree" << endl;
     auto tree = RBNode<string>::createRBTree(strings_cmp_callback);
-    cout << "All good!" << endl;
+    cout << "Tree created, inserting 'BBB'" << endl;
     tree->insert("BBB");
-    cout << "All good!" << endl;
+    cout << "inserting 'BBC'" << endl;
     tree->insert("BBC");
-    cout << "All good!" << endl;
+    cout << "inserting 'BBA'" << endl;
     tree->insert("BBA");
-    cout << "All good!" << endl;
+    cout << "inserting 'BBD'" << endl;
+    tree->insert("BBD");
 }
