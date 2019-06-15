@@ -20,6 +20,18 @@ enum class color
     BLACK
 };
 
+enum class direction {
+    LEFT,
+    RIGHT
+};
+
+direction flip(direction orig) {
+    if (orig == direction::LEFT) {
+        return direction::RIGHT;
+    }
+    return direction::LEFT;
+}
+
 template <class T>
 class RBNode final {
     struct ctor_protector_t{};
@@ -30,12 +42,17 @@ public:
     void insert(T);
     void remove(T);
 
+    std::shared_ptr<RBNode<T>> getChild(direction dir);
+    direction getDirectionFromParent();
+
     static std::shared_ptr<RBNode<T>> createRBTree(comp_func_t comp_func);
     RBNode(comp_func_t comp_func, ctor_protector_t ctor_protector);
     ~RBNode();
 
 private:
+    // Private as these operations can unbalance a tree
     void redden();
+    void rotate(direction dir);
 
     comp_func_t m_comp_func; // function for comparison between 2 keys
     color m_color;
@@ -71,7 +88,9 @@ void RBNode<T>::insert(T key) {
     if (!m_key) { // Node was Nil
         m_key = std::make_unique<T>(key);
         m_l = createRBTree(m_comp_func);
-        m_l->m_p = m_self; // setting the childer's parent "informs" them that they are not the root
+
+        // Setting the child's parent "informs" them that they are not the root
+        m_l->m_p = m_self;
         m_r = createRBTree(m_comp_func);
         m_r->m_p = m_self;
         redden();
@@ -91,13 +110,27 @@ void RBNode<T>::insert(T key) {
 }
 
 template <class T>
+std::shared_ptr<RBNode<T>> RBNode<T>::getChild(direction dir) {
+    return (dir == direction::LEFT) ? m_l : m_r;
+}
+
+template <class T>
+direction RBNode<T>::getDirectionFromParent() {
+    auto p = m_p.lock();
+    if (p->m_l == m_self.lock()) {
+        return direction::LEFT;
+    }
+    return direction::RIGHT;
+}
+
+template <class T>
 void RBNode<T>::redden() {
     if (m_color == color::RED) {
         return;
     }
     auto p = m_p.lock();
     if (p) {
-        // has a parent, this node is not root
+        // This node has a parent, therefore this node is not root
         // color this node as red
         m_color = color::RED;
         if (p->m_color == color::BLACK) {
@@ -107,8 +140,8 @@ void RBNode<T>::redden() {
         }
         // parent is red, therefore it cannot be root, and grandpa exists.
         auto grandpa = p->m_p.lock();
-        bool is_parent_left_kid = (grandpa->m_l == p);
-        auto uncle = is_parent_left_kid ? grandpa->m_r : grandpa->m_l;
+        direction parent_dir = p->getDirectionFromParent();
+        auto uncle = grandpa->getChild(flip(parent_dir));
         if (uncle->m_color == color::RED) {
             // Red father, red uncle
             p->m_color = color::BLACK;
@@ -117,13 +150,57 @@ void RBNode<T>::redden() {
             return;
         }
         else {
-            bool am_i_left_kid = (p->m_l == m_self.lock());
-            am_i_left_kid = am_i_left_kid;
-            throw NotImplemented("BLA BLA BLA");
+            direction my_dir = getDirectionFromParent();
+            if (my_dir == parent_dir) {
+                grandpa->rotate(flip(my_dir));
+                // As parent was red, grandpa was black. Now parent is the new grandpa
+                // and we need to switch colors between it and the old grandpa.
+                p->m_color = color::BLACK;
+                grandpa->m_color = color::RED;
+                return;
+            }
+            else {
+                // Parent is left child, I am right child
+                // or the symmetrical case
+                p->rotate(parent_dir);
+                // I am now parent of parent,
+                // set up conditions to a recursive call
+                p->m_color = color::BLACK;
+                p->redden();
+                return;
+            }
         }
     }
     else {
         // parent is nonexistant -> this node is the root, black height is increased by 1
         return;
+    }
+}
+
+template <class T>
+void RBNode<T>::rotate(direction dir) {
+    auto child = getChild(dir);
+    if (!getChild(flip(dir))) {
+        throw std::runtime_error("Attempting to rotate a NIL into node!");
+    }
+    auto p = m_p.lock();
+    m_p = child;
+    if (dir == direction::LEFT) {
+        m_r = child->m_l;
+        child->m_l = m_self.lock();
+    }
+    else {
+        m_l = child->m_r;
+        child->m_r = m_self.lock();
+    }
+    if(p) {
+        // This node has a parent, update parent's child pointer
+        direction my_dir = getDirectionFromParent();
+        if (my_dir == direction::LEFT) {
+            p->m_r = child;
+        }
+        else {
+            p->m_l = child;
+        }
     }
 }

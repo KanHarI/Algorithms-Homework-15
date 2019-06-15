@@ -22,8 +22,6 @@ int main(int argc, char** argv) {
     tree->insert("BBB");
     cout << "inserting 'BBC'" << endl;
     tree->insert("BBC");
-    cout << "inserting 'BBA'" << endl;
-    tree->insert("BBA");
     cout << "inserting 'BBD'" << endl;
     tree->insert("BBD");
 }
