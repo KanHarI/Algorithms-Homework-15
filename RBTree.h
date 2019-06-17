@@ -106,7 +106,6 @@ RBTree<T>::RBNode::RBNode(std::weak_ptr<RBTree<T>> tree)
 template <class T>
 RBTree<T>::RBNode::~RBNode() {
     if (m_key) {
-        std::cout << "Deleting: " << *m_key << std::endl;
     }
 }
 
@@ -132,6 +131,13 @@ bool RBTree<T>::RBNode::isNil() {
 template <class T>
 void RBTree<T>::RBNode::insert(T key) {
     if (!m_key) { // Node was Nil
+        std::cout << "Creating: '" << key << "'" << std::endl;
+        if (m_p.lock()) {
+            std::cout << "Under: '" << *m_p.lock()->m_key << "'" << std::endl;
+        }
+        else {
+            std::cout << "As root!" << std::endl;
+        }
         m_key = std::make_unique<T>(key);
         m_l = createChild();
         m_r = createChild();
@@ -160,7 +166,6 @@ void RBTree<T>::RBNode::kill() {
     // which holds a shared_ptr to current element.
     if (!m_key){
         // Attempting to kill leaf, do nothing
-        std::cout << "killing empty node" << std::endl;
         return;
     }
     if(!m_l->m_key && !m_r->m_key) {
@@ -208,10 +213,8 @@ void RBTree<T>::RBNode::kill() {
             // Deleting root node
             m_tree.lock()->m_root = child;
             if (child->m_key) {
-                std::cout << "Updating root node - new node: " << *child->m_key << std::endl;
             }
             else {
-                std::cout << "Updaing root node to an empty node" << std::endl;
             }
         }
         if (m_color == color::BLACK) {
@@ -254,10 +257,8 @@ void RBTree<T>::RBNode::kill() {
     else {
         // Current node is root!
         if (successor->m_key) {
-            std::cout << "Killing root node. New root node: '" << *successor->m_key << "'" << std::endl;
         }
         else {
-            std::cout << "New root node - empty" << std::endl;
         }
         m_tree.lock()->m_root = successor;
     }
@@ -321,15 +322,20 @@ std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::getChild(directio
 template <class T>
 direction RBTree<T>::RBNode::getDirectionFromParent() {
     auto p = m_p.lock();
+    if (!p) {
+        throw std::runtime_error("Root node is looking for parent :(");
+    }
     if (p->m_l == m_self.lock()) {
         return direction::LEFT;
     }
-    return direction::RIGHT;
+    if (p->m_r == m_self.lock()) {
+        return direction::RIGHT;
+    }
+    throw std::runtime_error("Parent does not know this node :(");
 }
 
 template <class T>
 void RBTree<T>::RBNode::redden() {
-    std::cout << "332" << std::endl;
     // I found it more intuitive to implement as recursion then as a loop
     if (m_color == color::RED) {
         throw std::runtime_error("Attempting to redden a red node! Error!");
@@ -347,12 +353,9 @@ void RBTree<T>::RBNode::redden() {
         // Parent is red, therefore it cannot be root, and grandpa exists.
         // Also, grandpa is black.
         auto grandpa = p->m_p.lock();
-        std::cout << "Grandpa: " << *grandpa->m_key << std::endl;
-        direction parent_dir = p->getDirectionFromParent();
+        auto parent_dir = p->getDirectionFromParent();
         auto uncle = grandpa->getChild(flip(parent_dir));
-        std::cout << "352" << std::endl;
         if (uncle->m_color == color::RED) {
-            std::cout << "354" << std::endl;
             // Red father, red uncle
             p->m_color = color::BLACK;
             uncle->m_color = color::BLACK;
@@ -360,35 +363,37 @@ void RBTree<T>::RBNode::redden() {
             return;
         }
         else {
-            std::cout << "362" << std::endl;
-            direction my_dir = getDirectionFromParent();
+            // Parent is red, uncle is black
+            if (m_key) {
+            }
+            else {
+            }
+            auto my_dir = getDirectionFromParent();
             if (my_dir == parent_dir) {
-                std::cout << "365" << std::endl;
-                grandpa->rotate(flip(my_dir));
-                // As parent was red, grandpa was black. Now parent is the new grandpa
-                // and we need to switch colors between it and the old grandpa.
+                // Me and parent are chilren of the same size, parent is red,
+                // grandpa is black and uncle is black.
+                // Switching colors between parent and grandpa and rotating
+                // to rebalance tree:
                 p->m_color = color::BLACK;
                 grandpa->m_color = color::RED;
+                grandpa->rotate(flip(my_dir));
+                // Now parent is the new grandpa and we need to switch colors
+                // between it and the old grandpa.
                 return;
             }
             else {
-                std::cout << "374" << std::endl;
                 // Parent is left child, I am right child
                 // or the symmetrical case
                 p->rotate(parent_dir);
-                std::cout << "375" << std::endl;
                 // I am now parent of parent,
                 // set up conditions to a recursive call
                 p->m_color = color::BLACK;
-                std::cout << "376" << std::endl;
                 p->redden();
-                std::cout << "377" << std::endl;
                 return;
             }
         }
     }
     else {
-        std::cout << "387" << std::endl;
         // parent is nonexistant -> this node is the root, black height is increased by 1
         return;
     }
@@ -413,7 +418,6 @@ void RBTree<T>::RBNode::blacken() {
     auto dir = getDirectionFromParent();
     auto brother = p->getChild(flip(dir));
     if (brother->m_color == color::RED) {
-        std::cout << "RB" << std::endl;
         // Brother is red, therefore father is black.
         // Switch colors betweeb brother and father then rotate,
         // this keeps the extra black node but moves us to one of the other
@@ -428,7 +432,6 @@ void RBTree<T>::RBNode::blacken() {
     else {
         // Black brother
         if (brother->m_l->m_color == color::BLACK && brother->m_r->m_color == color::BLACK) {
-            std::cout << "BBBB" << std::endl;
             // Black brother with 2 black kids
             // Remove double black status from current node,
             // and turn brother red. Then blacken parent
@@ -437,7 +440,6 @@ void RBTree<T>::RBNode::blacken() {
             return;
         }
         if (brother->getChild(dir)->m_color == color::RED && brother->getChild(flip(dir))->m_color == color::BLACK) {
-            std::cout << "BBRBK" << std::endl;
             // Red cousin on same side of brother as self to father, 
             // second cousin black.
             // Make red cousin into brother, and switch colors between it and
@@ -453,7 +455,6 @@ void RBTree<T>::RBNode::blacken() {
         // Assign brother the color of father, then color father black and
         // rotate father above me - getting rid of extra black. Color cousin
         // as black to be rid of extra black in flipped side.
-        std::cout << "BBRFC" << std::endl;
         brother->m_color = p->m_color;
         p->m_color = color::BLACK;
         brother->getChild(flip(dir))->m_color = color::BLACK;
@@ -464,52 +465,49 @@ void RBTree<T>::RBNode::blacken() {
 
 template <class T>
 void RBTree<T>::RBNode::rotate(direction dir) {
-    std::cout << "467" << std::endl;
-    auto child = getChild(flip(dir));
-    if (!child) {
+    auto new_parent = getChild(flip(dir));
+    if (!new_parent || !new_parent->m_key) {
         throw std::runtime_error("Attempting to rotate a NIL into node!");
     }
-    auto tmp_p = m_p;
-    m_p = child;
+
+    std::cout << "Rotating " << ((dir == direction::LEFT) ? "left" : "right") << ": '" << *m_key << "'" << std::endl;
+    std::cout << "new_parent: '" << *new_parent->m_key << "'" << std::endl;
+
+    auto old_parent = m_p.lock();
+    auto self = m_self.lock();
+    direction my_dir = direction::LEFT;
+    if (old_parent) {
+        std::cout << "old_parent: '" << *old_parent->m_key << "'" << std::endl;
+        my_dir = getDirectionFromParent();
+        std::cout << __LINE__ << std::endl;
+    }
+    else {
+        std::cout << "Under root!" << std::endl;
+    }
+
+    m_p = new_parent;
+    new_parent->m_p = old_parent;
     if (dir == direction::LEFT) {
-        std::cout << "475" << std::endl;
-        m_r = child->m_l;
-        child->m_l = m_self.lock();
+        m_r = new_parent->m_l;
+        new_parent->m_l = self;
     }
     else {
-        std::cout << "475" << std::endl;
-        m_l = child->m_r;
-        child->m_r = m_self.lock();
+        m_l = new_parent->m_r;
+        new_parent->m_r = self;
     }
-    std::cout << "484" << std::endl;
-    child->m_p = tmp_p;
-    auto p = tmp_p.lock();
-    if(p) {
-        std::cout << "488" << std::endl;
-        // This node has a parent, update parent's child pointer
-        direction my_dir = getDirectionFromParent();
+    if (old_parent) {
         if (my_dir == direction::LEFT) {
-            std::cout << "492" << std::endl;
-            p->m_r = child;
+            old_parent->m_l = new_parent;
         }
         else {
-            std::cout << "496" << std::endl;
-            p->m_l = child;
+            old_parent->m_r = new_parent;
         }
     }
     else {
-        std::cout << "499" << std::endl;
-        // Rotate child into the root node!
-        std::cout << "Noted root change" << std::endl;
-        if (child->m_key) {
-            std::cout << "New root: " << *(child->m_key) << std::endl;
-        }
-        else {
-            std::cout << "Rotated an empty node to root!" << *(child->m_key) << std::endl;
-        }
-        m_tree.lock()->m_root = child;
+        m_tree.lock()->m_root = new_parent;
     }
 }
+
 
 template <class T>
 RBTree<T>::RBTree(comp_func_t comp_func, ctor_protector_t ctor_protector)
@@ -523,7 +521,6 @@ RBTree<T>::~RBTree() {}
 
 template <class T>
 void RBTree<T>::insert(T key) {
-    std::cout << "Inserting '" << key << "'" << std::endl;
     m_root->insert(key);
 }
 

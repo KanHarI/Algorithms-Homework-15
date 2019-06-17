@@ -19,7 +19,7 @@ int strings_cmp_callback(string str1, string str2) {
 App::App(std::string dict_path, bool suggestions)
     : m_suggestions(suggestions)
     , m_dict(hash, HASH_TABLE_SIZE) {
-    read_dict(dict_path);
+    // read_dict(dict_path);
 }
 
 App::~App() {}
