@@ -211,13 +211,12 @@ void RBTree<T>::RBNode::kill() {
     }
     if (!m_l->m_key || !m_r->m_key) {
         std::cout << __LINE__ << std::endl;
-        // Node has only one child
         auto child = m_l->m_key ? m_l : m_r;
         child->m_p = m_p;
         auto p = m_p.lock();
         if (p) {
-            // Node has a parent
             auto dir = getDirectionFromParent();
+            // Node has a parent
             if (dir == direction::LEFT) {
                 p->m_l = child;
             }
@@ -228,50 +227,35 @@ void RBTree<T>::RBNode::kill() {
         else {
             // Deleting root node
             m_tree.lock()->m_root = child;
-            if (child->m_key) {
-            }
-            else {
-            }
         }
         if (m_color == color::BLACK) {
             child->blacken();
         }
         return;
     }
-    // Switch location with successor, then kill this node in that new position
+    // Switch location & color with successor, then kill this node in 
+    // that new position.
     std::cout << __LINE__ << std::endl;
     auto successor = succ();
 
-    auto old_dir = getDirectionFromParent();
     auto new_dir = successor->getDirectionFromParent();
+    std::cout << __LINE__ << std::endl;
+    auto new_parent = successor->m_p.lock();
 
     auto self = m_self.lock();
-    auto old_parent = m_p.lock();
     auto old_color = m_color;
+    auto old_parent = m_p.lock();
     auto old_r = m_r;
     auto old_l = m_l;
 
-    m_p = successor->m_p;
-    successor->m_p = old_parent;
-
-    m_color = successor->m_color;
-    successor->m_color = old_color;
-
-    m_r = successor->m_r;
-    m_r->m_p = self;
-    successor->m_r =old_r;
-
-    m_l = successor->m_l;
-    m_l->m_p = self;
-    successor->m_l = old_l;
-
-    if (new_dir == direction::LEFT) {
-        m_p.lock()->m_l = m_self.lock();
+    if (new_parent == self) {
+        // throw std::runtime_error("BLABLA");
+        std::cout << __LINE__ << " Fake delete " << std::endl;
+        return;
     }
-    else {
-        m_p.lock()->m_r = m_self.lock();
-    }
+
     if (old_parent) {
+        auto old_dir = getDirectionFromParent();
         // Node was not root
         if (old_dir == direction::LEFT) {
             old_parent->m_l = successor;
@@ -284,6 +268,31 @@ void RBTree<T>::RBNode::kill() {
         // Node was root
         m_tree.lock()->m_root = successor;
     }
+
+
+    m_color = successor->m_color;
+    successor->m_color = old_color;
+
+    m_p = new_parent;
+    if (new_dir == direction::LEFT) {
+        new_parent->m_l = self;
+    }
+    else {
+        new_parent->m_r = self;
+    }
+    successor->m_p = old_parent;
+
+    m_r = successor->m_r;
+    m_r->m_p = self;
+    successor->m_r =old_r;
+
+    m_l = successor->m_l;
+    m_l->m_p = self;
+    successor->m_l = old_l;
+
+    std::cout << __LINE__ << std::endl;
+    getDirectionFromParent();
+    std::cout << __LINE__ << std::endl;
     // Kill in new position, in which there is at most one child
     kill();
 }
@@ -300,24 +309,33 @@ std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::pred() const {
 
 template <class T>
 std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::scan(direction dir) const {
+    std::cout << __LINE__ << std::endl;
     auto ptr = getChild(dir);
     if (ptr && ptr->m_key) {
+        std::cout << __LINE__ << std::endl;
         // There is a child in the scanned direction, therefore successor is in subtree
         while(ptr->m_key) {
+            std::cout << __LINE__ << std::endl;
             // progress as much as possible in opposite direction in subtree
             ptr = ptr->getChild(flip(dir));
         }
         // Now we reached a leaf without a value, returning direct parent
+        std::cout << __LINE__ << std::endl;
         return ptr->m_p.lock();
     }
+    std::cout << __LINE__ << std::endl;
     ptr = m_self.lock();
     while (ptr->m_p.lock() && ptr->getDirectionFromParent() == dir) {
+        std::cout << __LINE__ << std::endl;
         ptr = ptr->m_p.lock();
     }
+    std::cout << __LINE__ << std::endl;
     if (!ptr) {
+        std::cout << __LINE__ << std::endl;
         return ptr;
     }
     // return either the direct parent, or if this is the last node - a nullptr
+    std::cout << __LINE__ << std::endl;
     return ptr->m_p.lock();
 }
 
@@ -367,14 +385,6 @@ direction RBTree<T>::RBNode::getDirectionFromParent() const {
     if (p->m_r == m_self.lock()) {
         return direction::RIGHT;
     }
-    if (p->m_l->m_key) {
-        // std::cout << "parent's left: '" << *p->m_l->m_key << "'" << std::endl;
-    }
-    if (p->m_r->m_key) {
-        // std::cout << "parent's right: '" << *p->m_r->m_key << "'" << std::endl;
-    }
-    // std::cout << "me: '" << *m_key << "'" << std::endl;
-    // std::cout << "parent: '" << *p->m_key << "'" << std::endl;
     throw std::runtime_error("Parent does not know this node :(");
 }
 

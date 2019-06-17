@@ -47,12 +47,16 @@ void App::run(string checked_path) {
             cout << "Killing: " << it->get() << endl;
             it->kill();
         }
+        else {
+            cout << "Found unk word: '" << it->get() << "'" << endl;
+        }
         it = next;
     }
     cout << "The following words are not in the dictionary:" << endl;
     it = m_words_tree->minimum();
     while (it && !it->isNil()) {
         cout << it->get() << endl;
+        it = it->succ();
     }
     cout << "Finished reading input file." << endl;
     
