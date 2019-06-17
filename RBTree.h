@@ -18,7 +18,7 @@ enum class direction {
     RIGHT
 };
 
-direction flip(direction orig) {
+inline direction flip(direction orig) {
     if (orig == direction::LEFT) {
         return direction::RIGHT;
     }
@@ -329,6 +329,7 @@ direction RBTree<T>::RBNode::getDirectionFromParent() {
 
 template <class T>
 void RBTree<T>::RBNode::redden() {
+    std::cout << "332" << std::endl;
     // I found it more intuitive to implement as recursion then as a loop
     if (m_color == color::RED) {
         throw std::runtime_error("Attempting to redden a red node! Error!");
@@ -346,9 +347,12 @@ void RBTree<T>::RBNode::redden() {
         // Parent is red, therefore it cannot be root, and grandpa exists.
         // Also, grandpa is black.
         auto grandpa = p->m_p.lock();
+        std::cout << "Grandpa: " << *grandpa->m_key << std::endl;
         direction parent_dir = p->getDirectionFromParent();
         auto uncle = grandpa->getChild(flip(parent_dir));
+        std::cout << "352" << std::endl;
         if (uncle->m_color == color::RED) {
+            std::cout << "354" << std::endl;
             // Red father, red uncle
             p->m_color = color::BLACK;
             uncle->m_color = color::BLACK;
@@ -356,8 +360,10 @@ void RBTree<T>::RBNode::redden() {
             return;
         }
         else {
+            std::cout << "362" << std::endl;
             direction my_dir = getDirectionFromParent();
             if (my_dir == parent_dir) {
+                std::cout << "365" << std::endl;
                 grandpa->rotate(flip(my_dir));
                 // As parent was red, grandpa was black. Now parent is the new grandpa
                 // and we need to switch colors between it and the old grandpa.
@@ -366,18 +372,23 @@ void RBTree<T>::RBNode::redden() {
                 return;
             }
             else {
+                std::cout << "374" << std::endl;
                 // Parent is left child, I am right child
                 // or the symmetrical case
                 p->rotate(parent_dir);
+                std::cout << "375" << std::endl;
                 // I am now parent of parent,
                 // set up conditions to a recursive call
                 p->m_color = color::BLACK;
+                std::cout << "376" << std::endl;
                 p->redden();
+                std::cout << "377" << std::endl;
                 return;
             }
         }
     }
     else {
+        std::cout << "387" << std::endl;
         // parent is nonexistant -> this node is the root, black height is increased by 1
         return;
     }
@@ -453,6 +464,7 @@ void RBTree<T>::RBNode::blacken() {
 
 template <class T>
 void RBTree<T>::RBNode::rotate(direction dir) {
+    std::cout << "467" << std::endl;
     auto child = getChild(flip(dir));
     if (!child) {
         throw std::runtime_error("Attempting to rotate a NIL into node!");
@@ -460,26 +472,33 @@ void RBTree<T>::RBNode::rotate(direction dir) {
     auto tmp_p = m_p;
     m_p = child;
     if (dir == direction::LEFT) {
+        std::cout << "475" << std::endl;
         m_r = child->m_l;
         child->m_l = m_self.lock();
     }
     else {
+        std::cout << "475" << std::endl;
         m_l = child->m_r;
         child->m_r = m_self.lock();
     }
+    std::cout << "484" << std::endl;
     child->m_p = tmp_p;
     auto p = tmp_p.lock();
     if(p) {
+        std::cout << "488" << std::endl;
         // This node has a parent, update parent's child pointer
         direction my_dir = getDirectionFromParent();
         if (my_dir == direction::LEFT) {
+            std::cout << "492" << std::endl;
             p->m_r = child;
         }
         else {
+            std::cout << "496" << std::endl;
             p->m_l = child;
         }
     }
     else {
+        std::cout << "499" << std::endl;
         // Rotate child into the root node!
         std::cout << "Noted root change" << std::endl;
         if (child->m_key) {
