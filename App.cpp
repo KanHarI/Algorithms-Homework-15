@@ -19,7 +19,7 @@ int strings_cmp_callback(string str1, string str2) {
 App::App(std::string dict_path, bool suggestions)
     : m_suggestions(suggestions)
     , m_dict(hash, HASH_TABLE_SIZE) {
-    // read_dict(dict_path);
+    read_dict(dict_path);
 }
 
 App::~App() {}
@@ -33,14 +33,28 @@ void App::run(string checked_path) {
     tie(line, word)  = fr.getWord();
     while (word != "") {
         try {
-            cout << "Inserting" << endl;
             m_words_tree->insert(word);
-            cout << "Inserted" << endl;
         }
         // Words are double by design!
         catch (const KeyAlreadyExists& e) {}
         tie(line, word)  = fr.getWord();
     }
+    cout << "Filtering read words..." << endl;
+    auto it = m_words_tree->minimum();
+    while (it && !it->isNil()) {
+        auto next = it->succ();
+        if (m_dict.lookup(it->get())) {
+            cout << "Killing: " << it->get() << endl;
+            it->kill();
+        }
+        it = next;
+    }
+    cout << "The following words are not in the dictionary:" << endl;
+    it = m_words_tree->minimum();
+    while (it && !it->isNil()) {
+        cout << it->get() << endl;
+    }
+    cout << "Finished reading input file." << endl;
     
 }
 
