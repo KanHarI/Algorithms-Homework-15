@@ -62,10 +62,11 @@ private:
 template <class T>
 class RBTree<T>::RBNode final {
 public:
-    // Operations
+    // Inserts a key to subtree under curent node
     void insert(T key);
-    void remove(T key);
-    void kill(); // remove current node
+    // Removes current node from tree. WARNING: you must hold a shared_ptr to
+    // current node when calling this.
+    void kill();
 
     // find predecessor node
     std::shared_ptr<RBNode> succ();
@@ -76,6 +77,8 @@ public:
 
     std::shared_ptr<RBNode> getChild(direction dir);
     direction getDirectionFromParent();
+
+    bool isNil();
 
     RBNode(std::weak_ptr<RBTree<T>> tree);
     ~RBNode();
@@ -133,6 +136,11 @@ std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::createChild() {
 }
 
 template <class T>
+bool RBTree<T>::RBNode::isNil() {
+    return !m_key;
+}
+
+template <class T>
 void RBTree<T>::RBNode::insert(T key) {
     if (!m_key) { // Node was Nil
         m_key = std::make_unique<T>(key);
@@ -156,16 +164,11 @@ void RBTree<T>::RBNode::insert(T key) {
 }
 
 template <class T>
-void RBTree<T>::RBNode::remove(T key) {
-    auto node = find(key);
-    if (!node) {
-        throw KeyNotFound();
-    }
-    node->kill();
-}
-
-template <class T>
 void RBTree<T>::RBNode::kill() {
+    // We change the parent's pointer to self.
+    // The code does not delete the object mid-execution and does not crash
+    // thanks to the only API to this function coming from TBTree<T>::remove
+    // which holds a shared_ptr to current element.
     if (!m_key){
         // Attempting to kill leaf, do nothing
         std::cout << "killing empty node" << std::endl;
@@ -306,7 +309,8 @@ std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::scan(direction di
 template <class T>
 std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::find(T key) {
     if (!m_key) {
-        return nullptr;
+        // Return an empty node as key was not found
+        return m_self.lock();
     }
 
     int comp_res = m_tree.lock()->m_comp_func(key, *m_key);
@@ -517,12 +521,16 @@ void RBTree<T>::insert(T key) {
 
 template <class T>
 void RBTree<T>::remove(T key) {
-    m_root->remove(key);
+    auto node = m_root->find(key);
+    if (node->isNil()) {
+        throw KeyNotFound();
+    }
+    node->kill();
 }
 
 template <class T>
 bool RBTree<T>::lookup(T key) {
-    return !!m_root->find(key);
+    return !m_root->find(key)->isNil();
 }
 
 #endif
