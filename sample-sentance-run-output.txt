@@ -24,6 +24,6 @@ Did you mean: 'polies'?
 woried
 Did you mean: 'worried'?
 
-real    0m2.769s
-user    0m2.545s
-sys     0m0.033s
+real    0m2.446s
+user    0m2.306s
+sys     0m0.043s

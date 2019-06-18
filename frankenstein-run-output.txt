@@ -237,6 +237,6 @@ writeto
 yesternights
 youhe
 
-real    0m9.736s
-user    0m9.285s
-sys     0m0.040s
+real    0m7.150s
+user    0m6.977s
+sys     0m0.030s

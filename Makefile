@@ -1,8 +1,11 @@
 
-CPPFLAGS=-Ofast -march=native -std=c++17 -Wall -Wextra -Wshadow -Wstrict-aliasing -pedantic -DNDEBUG
+CPPFLAGS=-flto -fwhole-program -Ofast -march=native -std=c++17 -Wall -Wextra -Wshadow -Wstrict-aliasing -pedantic -DNDEBUG
 
 
-main: main.o hash.o FileReader.o App.o Autocorrect.o
+spellChecker: link
+	strip --strip-all spellChecker
+
+link: main.o hash.o FileReader.o App.o Autocorrect.o
 	g++ $(CPPFLAGS) -o spellChecker main.o hash.o FileReader.o App.o Autocorrect.o
 
 main.o: main.cpp *.h *.hpp
