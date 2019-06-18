@@ -60,7 +60,8 @@ public:
     void insert(T key);
     // Removes current node from tree. WARNING: you must hold a shared_ptr to
     // current node when calling this.
-    void kill();
+    // Returns succcessor node (usefull to allow iterating and deleting nodes)
+    std::shared_ptr<RBNode> kill();
 
     // Find predecessor node
     std::shared_ptr<RBNode> succ() const;
@@ -173,128 +174,34 @@ void RBTree<T>::RBNode::insert(T key) {
 }
 
 template <class T>
-void RBTree<T>::RBNode::kill() {
-    // We change the parent's pointer to self.
-    // The code does not delete the object mid-execution and does not crash
-    // thanks to the only API to this function coming from TBTree<T>::remove
-    // which holds a shared_ptr to current element.
-    if (!m_key){
-        // Attempting to kill leaf, do nothing
-        return;
+std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::kill() {
+     std::shared_ptr<RBNode> retval = succ();
+    auto killed_node = m_self.lock();
+    if (m_r->m_key && m_l->m_key) {
+        killed_node = retval; // retval is the successor
+        retval = m_self.lock();
+        m_key = std::move(killed_node->m_key);
     }
-    if(!m_l->m_key && !m_r->m_key) {
-        std::cout << __LINE__ << std::endl;
-        // Node's childs are both leafs, can be removed safely
-        auto p = m_p.lock();
-        if(p) {
-            m_l->m_p = p;
-            // Node has a parent
-            auto dir = getDirectionFromParent();
-            if (dir == direction::LEFT) {
-                // Reseting pointer will delete node as this is the only
-                // reference to these nodes (using shared_ptr)
-                p->m_l = m_l;
-            }
-            else {
-                p->m_r = m_l;
-            }
-            if (m_color == color::BLACK) {
-                // Double black the leaf that replaced me
-                m_l->blacken();
-            }
-        }
-        else {
-            // Attempting to kill root node which has no kids, reset it's state
-            m_tree.lock()->m_root = RBNode::createNode(m_tree);
-        }
-        return;
-    }
-    if (!m_l->m_key || !m_r->m_key) {
-        std::cout << __LINE__ << std::endl;
-        auto child = m_l->m_key ? m_l : m_r;
-        child->m_p = m_p;
-        auto p = m_p.lock();
-        if (p) {
-            auto dir = getDirectionFromParent();
-            // Node has a parent
-            if (dir == direction::LEFT) {
-                p->m_l = child;
-            }
-            else {
-                p->m_r = child;
-            }
-        }
-        else {
-            // Deleting root node
-            m_tree.lock()->m_root = child;
-        }
-        if (m_color == color::BLACK) {
-            child->blacken();
-        }
-        return;
-    }
-    // Switch location & color with successor, then kill this node in 
-    // that new position.
-    std::cout << __LINE__ << std::endl;
-    auto successor = succ();
-
-    auto new_dir = successor->getDirectionFromParent();
-    std::cout << __LINE__ << std::endl;
-    auto new_parent = successor->m_p.lock();
-
-    auto self = m_self.lock();
-    auto old_color = m_color;
-    auto old_parent = m_p.lock();
-    auto old_r = m_r;
-    auto old_l = m_l;
-
-    if (new_parent == self) {
-        // throw std::runtime_error("BLABLA");
-        std::cout << __LINE__ << " Fake delete " << std::endl;
-        return;
-    }
-
-    if (old_parent) {
-        auto old_dir = getDirectionFromParent();
-        // Node was not root
-        if (old_dir == direction::LEFT) {
-            old_parent->m_l = successor;
-        }
-        else {
-            old_parent->m_r = successor;
-        }
+    auto replacing_node = killed_node->m_l->m_key ? killed_node->m_l : killed_node->m_r;
+    auto killed_node_parent = killed_node->m_p.lock();
+    if (!killed_node_parent) {
+        // killed node is root
+        m_tree.lock()->m_root = replacing_node;
     }
     else {
-        // Node was root
-        m_tree.lock()->m_root = successor;
+        auto killed_node_dir = killed_node->getDirectionFromParent();
+        if (killed_node_dir == direction::LEFT) {
+            killed_node_parent->m_l = replacing_node;
+        }
+        else {
+            killed_node_parent->m_r = replacing_node;
+        }
     }
-
-
-    m_color = successor->m_color;
-    successor->m_color = old_color;
-
-    m_p = new_parent;
-    if (new_dir == direction::LEFT) {
-        new_parent->m_l = self;
+    replacing_node->m_p = killed_node_parent;
+    if (killed_node->m_color == color::BLACK) {
+        replacing_node->blacken();
     }
-    else {
-        new_parent->m_r = self;
-    }
-    successor->m_p = old_parent;
-
-    m_r = successor->m_r;
-    m_r->m_p = self;
-    successor->m_r =old_r;
-
-    m_l = successor->m_l;
-    m_l->m_p = self;
-    successor->m_l = old_l;
-
-    std::cout << __LINE__ << std::endl;
-    getDirectionFromParent();
-    std::cout << __LINE__ << std::endl;
-    // Kill in new position, in which there is at most one child
-    kill();
+    return retval;
 }
 
 template <class T>
@@ -309,33 +216,33 @@ std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::pred() const {
 
 template <class T>
 std::shared_ptr<typename RBTree<T>::RBNode> RBTree<T>::RBNode::scan(direction dir) const {
-    std::cout << __LINE__ << std::endl;
+    // std::cout << __LINE__ << std::endl;
     auto ptr = getChild(dir);
     if (ptr && ptr->m_key) {
-        std::cout << __LINE__ << std::endl;
+        // std::cout << __LINE__ << std::endl;
         // There is a child in the scanned direction, therefore successor is in subtree
         while(ptr->m_key) {
-            std::cout << __LINE__ << std::endl;
+            // std::cout << __LINE__ << std::endl;
             // progress as much as possible in opposite direction in subtree
             ptr = ptr->getChild(flip(dir));
         }
         // Now we reached a leaf without a value, returning direct parent
-        std::cout << __LINE__ << std::endl;
+        // std::cout << __LINE__ << std::endl;
         return ptr->m_p.lock();
     }
-    std::cout << __LINE__ << std::endl;
+    // std::cout << __LINE__ << std::endl;
     ptr = m_self.lock();
     while (ptr->m_p.lock() && ptr->getDirectionFromParent() == dir) {
-        std::cout << __LINE__ << std::endl;
+        // std::cout << __LINE__ << std::endl;
         ptr = ptr->m_p.lock();
     }
-    std::cout << __LINE__ << std::endl;
+    // std::cout << __LINE__ << std::endl;
     if (!ptr) {
-        std::cout << __LINE__ << std::endl;
+        // std::cout << __LINE__ << std::endl;
         return ptr;
     }
     // return either the direct parent, or if this is the last node - a nullptr
-    std::cout << __LINE__ << std::endl;
+    // std::cout << __LINE__ << std::endl;
     return ptr->m_p.lock();
 }
 
@@ -390,152 +297,187 @@ direction RBTree<T>::RBNode::getDirectionFromParent() const {
 
 template <class T>
 void RBTree<T>::RBNode::redden() {
-    // I found it more intuitive to implement as recursion then as a loop
-    if (m_color == color::RED) {
-        throw std::runtime_error("Attempting to redden a red node! Error!");
-    }
+    // Implementing as recursion is easier in this case
+    // as we get free updates of `this`
     auto p = m_p.lock();
-    if (p) {
-        // This node has a parent, therefore this node is not root
-        // color this node as red
-        m_color = color::RED;
-        if (p->m_color == color::BLACK) {
-            // parent is black, we can color this node red and end the recursion
-            m_color = color::RED;
-            return;
-        }
-        // Parent is red, therefore it cannot be root, and grandpa exists.
-        // Also, grandpa is black.
-        auto grandpa = p->m_p.lock();
-        auto parent_dir = p->getDirectionFromParent();
-        auto uncle = grandpa->getChild(flip(parent_dir));
-        if (uncle->m_color == color::RED) {
-            // Red father, red uncle
-            p->m_color = color::BLACK;
-            uncle->m_color = color::BLACK;
-            grandpa->redden();
-            return;
-        }
-        else {
-            // Parent is red, uncle is black
-            if (m_key) {
-            }
-            else {
-            }
-            auto my_dir = getDirectionFromParent();
-            if (my_dir == parent_dir) {
-                // Me and parent are chilren of the same size, parent is red,
-                // grandpa is black and uncle is black.
-                // Switching colors between parent and grandpa and rotating
-                // to rebalance tree:
-                p->m_color = color::BLACK;
-                grandpa->m_color = color::RED;
-                grandpa->rotate(flip(my_dir));
-                // Now parent is the new grandpa and we need to switch colors
-                // between it and the old grandpa.
-                return;
-            }
-            else {
-                // Parent is left child, I am right child
-                // or the symmetrical case
-                p->rotate(parent_dir);
-                // I am now parent of parent,
-                // set up conditions to a recursive call
-                p->m_color = color::BLACK;
-                p->redden();
-                return;
-            }
-        }
-    }
-    else {
-        // parent is nonexistant -> this node is the root, black height is increased by 1
+    if (!p) {
+        // root, update red height by one
+        m_color = color::BLACK;
         return;
     }
-    throw std::runtime_error("Redden case not found! Error!");
+    
+    m_color = color::RED;
+    if (p->m_color == color::BLACK) {
+        // All ok, can finish recursion
+        return;
+    }
+
+    auto grandpa = p->m_p.lock();
+    auto parent_dir = p->getDirectionFromParent();
+    auto uncle = grandpa->getChild(flip(parent_dir));
+
+    // Case 1
+    if (uncle->m_color == color::RED) {
+        // Red uncle, color father and uncle black and pass reddening upwards
+        p->m_color = color::BLACK;
+        uncle->m_color = color::BLACK;
+        grandpa->redden();
+        return;
+    }
+    
+    auto dir = getDirectionFromParent();
+        
+    // Case 2
+    if (dir != parent_dir) {
+        // Rotate into case 3
+        p->rotate(parent_dir);
+        p->redden();
+        return;
+    }
+
+    // Case 3
+    p->m_color = color::BLACK;
+    grandpa->m_color = color::RED;
+    grandpa->rotate(flip(parent_dir));
 }
+
 
 template <class T>
 void RBTree<T>::RBNode::blacken() {
-    std::cout << __LINE__ << std::endl;
-    // I found it more intuitive to implement as recursion then as a loop
-    if(m_color == color::RED) {
-        std::cout << __LINE__ << std::endl;
+    // More natural to implement using recursion
+    auto p = m_p.lock();
+    if (!p) {
+        // Node is root, decrease black height by one
+        return;
+    }
+    if (m_color == color::RED) {
         // Blackening a red node is easy
         m_color = color::BLACK;
         return;
     }
-    std::cout << __LINE__ << std::endl;
-    auto p = m_p.lock();
-    if (!p) {
-        std::cout << __LINE__ << std::endl;
-        // This is root, reduce black height by one...
-        m_color = color::BLACK;
-        return;
-    }
-    std::cout << __LINE__ << std::endl;
-    // Current node is double black
     auto dir = getDirectionFromParent();
     auto brother = p->getChild(flip(dir));
-    std::cout << __LINE__ << std::endl;
+    // Case 1
     if (brother->m_color == color::RED) {
-        std::cout << __LINE__ << std::endl;
-        // Brother is red, therefore father is black.
-        // Switch colors betweeb brother and father then rotate,
-        // this keeps the extra black node but moves us to one of the other
-        // cases upon next recursive call.
         brother->m_color = color::BLACK;
         p->m_color = color::RED;
         p->rotate(dir);
-        // Call recursively
+        // Move to black brother case
         blacken();
         return;
     }
-    else {
-        // Black brother
-        std::cout << __LINE__ << std::endl;
-        if (!brother->m_key) {
-            throw std::runtime_error("Error: leaf kid of black's father");
-            // brother is a leaf
-            p->blacken();
-            return;
-        }
-        if (brother->getChild(dir)->m_color == color::BLACK && brother->getChild(flip(dir))->m_color == color::BLACK) {
-            std::cout << __LINE__ << std::endl;
-            // Black brother with 2 black kids
-            // Remove double black status from current node,
-            // and turn brother red. Then blacken parent
-            brother->m_color = color::BLACK;
-            p->blacken();
-            return;
-        }
-        if (brother->getChild(dir)->m_color == color::RED && brother->getChild(flip(dir))->m_color == color::BLACK) {
-            std::cout << __LINE__ << std::endl;
-            // Red cousin on same side of brother as self to father, 
-            // second cousin black.
-            // Make red cousin into brother, and switch colors between it and
-            // current brother.
-            brother->m_color = color::RED;
-            brother->getChild(dir)->m_color = color::BLACK;
-            brother->rotate(flip(dir));
-            // In next recursion iteration we will have a flipped-side red cousing
-            blacken();
-            return;
-        }
-        if (brother->getChild(flip(dir))->m_color == color::RED) {
-            // The remaining case is black brother with red flipped-side cousin.
-            // Assign brother the color of father, then color father black and
-            // rotate father above me - getting rid of extra black. Color cousin
-            // as black to be rid of extra black in flipped side.
-            std::cout << __LINE__ << std::endl;
-            p->rotate(dir);
-            brother->m_color = p->m_color;
-            p->m_color = color::BLACK;
-            brother->getChild(flip(dir))->m_color = color::BLACK;
-            return;
-        }
-        throw std::runtime_error("Imppssible, case not found!");
+    // Black brother
+    // Case 2
+    if (brother->m_l->m_color == color::BLACK && brother->m_r->m_color == color::BLACK) {
+        // Both brother's kids are black
+        // color brother red, and move extra black upwards
+        brother->m_color = color::RED;
+        p->blacken();
+        return;
     }
+    // At least one kid of brother is red
+    // Case 3
+    if (brother->getChild(flip(dir))->m_color == color::BLACK) {
+        // Color same sided cousin in black and brother in red
+        // then rotate brother into opposing side cousin (red -> case 4)
+        brother->getChild(dir)->m_color = color::BLACK;
+        brother->m_color = color::RED;
+        brother->rotate(flip(dir));
+        blacken();
+        return;
+    }
+    // The remaining case is red opposite sided cousin
+    // Case 4
+    // Switch colors between (black) brother and parent, rotating parent and
+    // adding a black node on both sides of new parent, rebalancing the tree
+    brother->m_color = p->m_color;
+    p->m_color = color::BLACK;
+    brother->getChild(flip(dir))->m_color = color::BLACK;
+    p->rotate(dir);
 }
+
+// template <class T>
+// void RBTree<T>::RBNode::blacken() {
+//     std::cout << __LINE__ << std::endl;
+//     // I found it more intuitive to implement as recursion then as a loop
+//     if(m_color == color::RED) {
+//         std::cout << __LINE__ << std::endl;
+//         // Blackening a red node is easy
+//         m_color = color::BLACK;
+//         return;
+//     }
+//     std::cout << __LINE__ << std::endl;
+//     auto p = m_p.lock();
+//     if (!p) {
+//         std::cout << __LINE__ << std::endl;
+//         // This is root, reduce black height by one...
+//         m_color = color::BLACK;
+//         return;
+//     }
+//     std::cout << __LINE__ << std::endl;
+//     // Current node is double black
+//     auto dir = getDirectionFromParent();
+//     auto brother = p->getChild(flip(dir));
+//     std::cout << __LINE__ << std::endl;
+//     if (brother->m_color == color::RED) {
+//         std::cout << __LINE__ << std::endl;
+//         // Brother is red, therefore father is black.
+//         // Switch colors betweeb brother and father then rotate,
+//         // this keeps the extra black node but moves us to one of the other
+//         // cases upon next recursive call.
+//         brother->m_color = color::BLACK;
+//         p->m_color = color::RED;
+//         p->rotate(dir);
+//         // Call recursively
+//         blacken();
+//         return;
+//     }
+//     else {
+//         // Black brother
+//         std::cout << __LINE__ << std::endl;
+//         if (!brother->m_key) {
+//             throw std::runtime_error("Error: leaf kid of black's father");
+//             // brother is a leaf
+//             p->blacken();
+//             return;
+//         }
+//         if (brother->getChild(dir)->m_color == color::BLACK && brother->getChild(flip(dir))->m_color == color::BLACK) {
+//             std::cout << __LINE__ << std::endl;
+//             // Black brother with 2 black kids
+//             // Remove double black status from current node,
+//             // and turn brother red. Then blacken parent
+//             brother->m_color = color::BLACK;
+//             p->blacken();
+//             return;
+//         }
+//         if (brother->getChild(dir)->m_color == color::RED && brother->getChild(flip(dir))->m_color == color::BLACK) {
+//             std::cout << __LINE__ << std::endl;
+//             // Red cousin on same side of brother as self to father, 
+//             // second cousin black.
+//             // Make red cousin into brother, and switch colors between it and
+//             // current brother.
+//             brother->m_color = color::RED;
+//             brother->getChild(dir)->m_color = color::BLACK;
+//             brother->rotate(flip(dir));
+//             // In next recursion iteration we will have a flipped-side red cousing
+//             blacken();
+//             return;
+//         }
+//         if (brother->getChild(flip(dir))->m_color == color::RED) {
+//             // The remaining case is black brother with red flipped-side cousin.
+//             // Assign brother the color of father, then color father black and
+//             // rotate father above me - getting rid of extra black. Color cousin
+//             // as black to be rid of extra black in flipped side.
+//             std::cout << __LINE__ << std::endl;
+//             p->rotate(dir);
+//             brother->m_color = p->m_color;
+//             p->m_color = color::BLACK;
+//             brother->getChild(flip(dir))->m_color = color::BLACK;
+//             return;
+//         }
+//         throw std::runtime_error("Imppssible, case not found!");
+//     }
+// }
 
 template <class T>
 void RBTree<T>::RBNode::rotate(direction dir) {

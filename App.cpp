@@ -39,18 +39,15 @@ void App::run(string checked_path) {
         catch (const KeyAlreadyExists& e) {}
         tie(line, word)  = fr.getWord();
     }
-    cout << "Filtering read words..." << endl;
+    cout << "Finished reading input file. Filtering words..." << endl;
     auto it = m_words_tree->minimum();
     while (it && !it->isNil()) {
-        auto next = it->succ();
         if (m_dict.lookup(it->get())) {
-            cout << "Killing: " << it->get() << endl;
-            it->kill();
+            it = it->kill();
         }
         else {
-            cout << "Found unk word: '" << it->get() << "'" << endl;
+            it = it->succ();
         }
-        it = next;
     }
     cout << "The following words are not in the dictionary:" << endl;
     it = m_words_tree->minimum();
@@ -58,7 +55,6 @@ void App::run(string checked_path) {
         cout << it->get() << endl;
         it = it->succ();
     }
-    cout << "Finished reading input file." << endl;
     
 }
 
