@@ -23,4 +23,5 @@ Usage:
 `./spellChecker <dict-file> [checked-file-1 checked-file-2 ...]`
 
 This software is written by Itay Knaan-Harpaz AKA KanHar https://github.com/KanHarI/
+
 All rights reserved to the Open University of Israel https://www.openu.ac.il/
