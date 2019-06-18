@@ -11,21 +11,32 @@
 template <class T>
 class Hashtable final {
 private:
+	// Entry in the hash table
 	class Entry;
+
 public:
+	// hash function turning objects of type T into hashes
 	using hash_func_t = std::function<size_t(T)>;
 
+	// Construct an empty hash table using hash_func as hashing function
+	// and of size 'size'.
 	Hashtable(hash_func_t hash_func, size_t size);
 	~Hashtable();
 
 	// Adds a key to the hash table
 	void insert(T key);
+
 	// Check whether a key is in the hash table
-	bool lookup(T key);
+	bool lookup(T key) const;
 
 private:
+	// hash function
 	hash_func_t m_hash_func;
+
+	// Table linking hashed to entries
 	std::vector<Entry> m_table;
+
+	// size of hash table
 	size_t m_size;
 };
 
@@ -35,54 +46,17 @@ public:
 	Entry();
 	~Entry();
 
+	// Insert a new key to the hash table
 	void insert(T key);
-	bool lookup(T key);
+
+	// Check whether a certain key is in the table
+	bool lookup(T key) const;
 
 private:
+	// List of keys with current hash
 	std::list<T> m_keys;
 };
 
-template <class T>
-Hashtable<T>::Entry::Entry() {}
-
-template <class T>
-Hashtable<T>::Entry::~Entry() {}
-
-template <class T>
-void Hashtable<T>::Entry::insert(T key) {
-	auto it = std::find(m_keys.begin(), m_keys.end(), key);
-	if (it != m_keys.end()) {
-		throw KeyAlreadyExists();
-	}
-	m_keys.push_front(key);
-}
-
-template <class T>
-bool Hashtable<T>::Entry::lookup(T key) {
-	auto it = std::find(m_keys.begin(), m_keys.end(), key);
-	return it != m_keys.end();
-}
-
-template <class T>
-Hashtable<T>::Hashtable(typename Hashtable<T>::hash_func_t hash_func, size_t size)
-	: m_hash_func(hash_func)
-	, m_table(size)
-	, m_size(size) {}
-
-template <class T>
-Hashtable<T>::~Hashtable() {}
-
-
-template <class T>
-void Hashtable<T>::insert(T key) {
-	size_t hash = m_hash_func(key);
-	m_table[hash % m_size].insert(key);
-}
-
-template <class T>
-bool Hashtable<T>::lookup(T key) {
-	size_t hash = m_hash_func(key);
-	return m_table[hash % m_size].lookup(key);
-}
+#include "Hashtable.hpp"
 
 #endif

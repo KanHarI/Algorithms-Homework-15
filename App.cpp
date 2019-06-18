@@ -25,22 +25,22 @@ App::App(std::string dict_path, bool suggestions)
 App::~App() {}
 
 void App::run(string checked_path) {
-    m_words_tree = RBTree<string>::createTree(strings_cmp_callback);
+    std::shared_ptr<RBTree<std::string>> words_tree;
+    words_tree = RBTree<string>::createTree(strings_cmp_callback);
     FileReader fr(checked_path);
-    size_t line;
     string word;
     cout << "Reading input file..." << endl;
-    tie(line, word)  = fr.getWord();
+    word = fr.getWord();
     while (word != "") {
         try {
-            m_words_tree->insert(word);
+            words_tree->insert(word);
         }
-        // Words are double by design!
+        // Words can appear more then once in text!
         catch (const KeyAlreadyExists& e) {}
-        tie(line, word)  = fr.getWord();
+        word  = fr.getWord();
     }
     cout << "Finished reading input file. Filtering words..." << endl;
-    auto it = m_words_tree->minimum();
+    auto it = words_tree->minimum();
     while (it && !it->isNil()) {
         if (m_dict.lookup(it->get())) {
             it = it->kill();
@@ -50,7 +50,7 @@ void App::run(string checked_path) {
         }
     }
     cout << "The following words are not in the dictionary:" << endl;
-    it = m_words_tree->minimum();
+    it = words_tree->minimum();
     while (it && !it->isNil()) {
         cout << it->get() << endl;
         it = it->succ();
@@ -60,10 +60,8 @@ void App::run(string checked_path) {
 
 void App::read_dict(string dict_path) {
     FileReader fr(dict_path);
-    size_t line;
-    string word;
     cout << "Reading dictionaty..." << endl;
-    tie(line, word)  = fr.getWord();
+    string word = fr.getWord();
     while (word != "") {
         try {
             m_dict.insert(word);
@@ -71,7 +69,7 @@ void App::read_dict(string dict_path) {
         // Some words are double in lower/upper case,
         // or they are the same as another word with non-alphanumeric characters in it.
         catch (const KeyAlreadyExists& e) {}
-        tie(line, word)  = fr.getWord();
+        word  = fr.getWord();
     }
     cout << "Finished loading dictionary" << endl;
 }

@@ -6,18 +6,16 @@
 using std::string;
 
 FileReader::FileReader(std::string path)
-	: m_file(path)
-	, m_line(0) {}
+	: m_file(path) {}
 
 FileReader::~FileReader() {}
 
-std::tuple<size_t, std::string> FileReader::getWord() {
+std::string FileReader::getWord() {
 	while(1) { // Break by 'return' only when a word is found
 		if(!m_line_reader) {
-			m_line += 1;
 			string line;
 			if(!getline(m_file,line)) {
-				return std::make_tuple(m_line, "");
+				return "";
 			}
 			m_line_reader = std::istringstream(line);
 		}
@@ -25,7 +23,7 @@ std::tuple<size_t, std::string> FileReader::getWord() {
 		m_line_reader >> word;
 		word = processWord(word);
 		if (word != "") {
-			return {m_line, word};
+			return word;
 		}
 	}
 }

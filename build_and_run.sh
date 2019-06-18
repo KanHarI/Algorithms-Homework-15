@@ -1,3 +1,3 @@
 
 make clean
-make && time ./main
+make && time ./spellChecker english-dict.txt sample-sentance.txt frankenstein.txt

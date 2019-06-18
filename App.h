@@ -7,7 +7,7 @@
 #include "Hashtable.h"
 #include "RBTree.h"
 
-class App {
+class App final {
 public:
 	App(std::string dict_path, bool suggestions);
 	~App();
@@ -19,7 +19,6 @@ private:
 
 	bool m_suggestions;
 	Hashtable<std::string> m_dict;
-	std::shared_ptr<RBTree<std::string>> m_words_tree;
 };
 
 #endif
