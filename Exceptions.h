@@ -8,7 +8,7 @@
     class exception : public superclass { \
     public: \
         exception(std::string message="") : superclass(message) {} \
-    };
+    }
 
 DEF_EXCEPTION(std::runtime_error, KeyAlreadyExists);
 DEF_EXCEPTION(std::runtime_error, KeyNotFound);

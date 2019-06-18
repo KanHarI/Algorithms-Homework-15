@@ -1,0 +1,242 @@
+
+[kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt frankenstein.txt 
+Reading dictionaty...
+Finished loading dictionary
+
+Cheking file 'frankenstein.txt'.
+Reading input file...
+Finished reading input file. Filtering words...
+The following words are not in the dictionary:
+1
+10
+11
+11th
+12
+12th
+13
+13th
+14
+15
+16
+17
+18
+18th
+19
+20
+21
+22
+Did you mean: '2'?
+23
+24
+26th
+27th
+28th
+3
+3lst
+4
+5
+6
+7
+8
+9
+acti
+Did you mean: 'cati'?
+albertus
+angelicashe
+arthurs
+arve
+Did you mean: 'rave'?
+arveiron
+asiatics
+banas
+Did you mean: 'banes'?
+beauforts
+bedo
+Did you mean: 'pedo'?
+bekive
+belrive
+belvrie
+bernards
+bettertheir
+blessingwhat
+brothertears
+causethe
+chamounix
+chanceor
+charnelhouses
+chene
+Did you mean: 'chenee'?
+clerval
+clervalcould
+coleridges
+consolationdeep
+copet
+Did you mean: 'coppet'?
+cottagerstheir
+coupar
+Did you mean: 'couper'?
+deadthat
+deatha
+deathknell
+degeneratingof
+delighthis
+delightso
+describegigantic
+distemperelizabeth
+doorled
+drance
+Did you mean: 'trance'?
+drivest
+duvillard
+dwellingplaces
+elizabethand
+elizabeths
+endeavours
+enemyto
+etext
+evergentle
+everwatchful
+evian
+Did you mean: 'avian'?
+false
+Did you mean: 'valse'?
+fateenounced
+favourites
+fellowpupil
+fiendi
+fishingboat
+foldings
+foreverthat
+frankensteinhe
+frankensteinmore
+frementi
+fursa
+Did you mean: 'furca'?
+graveworms
+halfextinguished
+halfpainful
+halfsuppressed
+havredegrace
+heavenlyif
+henrythey
+hidingplace
+hidingplaces
+himthat
+housemy
+housew
+howlings
+icerifts
+icerock
+italyone
+ith
+Did you mean: 'eth'?
+itthus
+joyimparting
+juras
+justines
+kindthey
+kirwins
+krempe
+l9
+labourthe
+landsledge
+latediscovered
+lavenza
+leavessights
+lifemy
+lineone
+lipswith
+listlesslyi
+liveswear
+lovedst
+maladie
+marketwoman
+memy
+Did you mean: 'emmy'?
+menot
+Did you mean: 'mento'?
+minemine
+montalegre
+montanvert
+mountainsthey
+mountainstream
+myselfor
+navigatorsthere
+nearhe
+occurredan
+ognor
+omnipotenceand
+onciliating
+orientalists
+ourselvessuch
+outstript
+overthese
+owest
+passionremembering
+pauls
+Did you mean: 'palus'?
+pelissier
+petersburgh
+plainpalais
+pleasurei
+plutarchs
+prizemoney
+relievedfor
+remembrancers
+restingplace
+reuss
+Did you mean: 'reus'?
+rhone
+Did you mean: 'rhona'?
+romansof
+sadnessin
+safeand
+safie
+saleve
+schiavi
+secheron
+selfreproaches
+sensationsthey
+servox
+shoreoften
+shrinededicated
+sisterthe
+spokebut
+summersshe
+sympathiesas
+syndiche
+tenthousandth
+thisi
+thonon
+thriceaccursed
+throbbings
+thusnot
+tintern
+truthdo
+unborrowd
+ungazed
+utterexclamations
+victortomorrow
+visitings
+volneys
+wandring
+weddingnight
+welland
+Did you mean: 'weland'?
+werter
+Did you mean: 'welter'?
+werters
+Did you mean: 'welters'?
+whalefishers
+whalefishing
+wollstonecraft
+wordsrather
+wordsworths
+worldminded
+writeto
+yesternights
+youhe
+
+real    0m9.736s
+user    0m9.285s
+sys     0m0.040s

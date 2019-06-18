@@ -1,0 +1,29 @@
+
+[kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt sample-sentance.txt 
+Reading dictionaty...
+Finished loading dictionary
+
+Cheking file 'sample-sentance.txt'.
+Reading input file...
+Finished reading input file. Filtering words...
+The following words are not in the dictionary:
+caled
+Did you mean: 'called'?
+haerd
+Did you mean: 'heard'?
+ideea
+Did you mean: 'idea'?
+kar
+Did you mean: 'kra'?
+lookking
+Did you mean: 'looking'?
+mayby
+Did you mean: 'maybe'?
+polise
+Did you mean: 'polies'?
+woried
+Did you mean: 'worried'?
+
+real    0m2.769s
+user    0m2.545s
+sys     0m0.033s

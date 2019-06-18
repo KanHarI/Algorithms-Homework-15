@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
     }
     App app(argv[1]);
     for (int i = 2; i < argc; ++i) {
-        cout << endl << "Cheking file '" << argv[i] << "'. Unknown words:" << endl;
+        cout << endl << "Cheking file '" << argv[i] << "'." << endl;
         app.run(argv[i]);
     }
     return 1;

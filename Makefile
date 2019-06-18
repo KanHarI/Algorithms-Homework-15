@@ -1,5 +1,5 @@
 
-CPPFLAGS=-Ofast -march=native -std=c++17 -Wall -Wextra -DNDEBUG
+CPPFLAGS=-Ofast -march=native -std=c++17 -Wall -Wextra -Wshadow -Wstrict-aliasing -pedantic -DNDEBUG
 
 
 main: main.o hash.o FileReader.o App.o Autocorrect.o
