@@ -8,6 +8,12 @@
 
 #include "Exceptions.h"
 
+/**
+ * This class is a a template implementation of a hashtable using user given 
+ * hash function.
+ * Collisions are solved via appending keys to a list in the relevant hash
+ * table entry.
+ */
 template <class T>
 class Hashtable final {
 private:

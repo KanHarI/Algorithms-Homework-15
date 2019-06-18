@@ -18,6 +18,20 @@ enum class direction {
     RIGHT
 };
 
+/**
+ * A template implementation of a red-black binary tree.
+ * The implementation uses smart pointers instead of regular C-style pointers
+ * to allow greater verbosity.
+ * Each node has a weak_ptr reference to it's parent and a shared_ptr to it's
+ * childern. Assuming there are not other pointers to it's children, deleting
+ * a node - or a whole tree - is as simple as resetting the pointer to it or
+ * having it's pointer get out of scope.
+ * The nodes has to keep an element to the tree object. To allow this,
+ * creation of a tree object is allowed only via the createTree function
+ * whom returns a shared_ptr to a newly created tree. This law is enforced
+ * by requiring a private-typed empty struct as a parameter to the constructor
+ * which will be optimized away by the compiler.
+ */
 template <class T>
 class RBTree final {
 private:
