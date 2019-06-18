@@ -14,7 +14,7 @@ void Hashtable<T>::Entry::insert(T key) {
 	if (it != m_keys.end()) {
 		throw KeyAlreadyExists();
 	}
-	m_keys.push_front(key);
+	m_keys.push_back(key);
 }
 
 template <class T>

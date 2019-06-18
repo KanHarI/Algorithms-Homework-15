@@ -16,9 +16,9 @@ int strings_cmp_callback(string str1, string str2) {
     return str1.compare(str2);
 }
 
-App::App(std::string dict_path, bool suggestions)
-    : m_suggestions(suggestions)
-    , m_dict(hash, HASH_TABLE_SIZE) {
+App::App(std::string dict_path)
+    : m_dict(hash, HASH_TABLE_SIZE)
+    , m_autocorrect(m_dict) {
     read_dict(dict_path);
 }
 
@@ -52,7 +52,12 @@ void App::run(string checked_path) {
     cout << "The following words are not in the dictionary:" << endl;
     it = words_tree->minimum();
     while (it && !it->isNil()) {
-        cout << it->get() << endl;
+        word = it->get();
+        cout << word << endl;
+        auto suggestion = m_autocorrect.attemptAutocorrect(word);
+        if (suggestion != "") {
+            cout << "Did you mean: '" << suggestion << "'?" << endl;
+        }
         it = it->succ();
     }
     

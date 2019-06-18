@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     if (argc < 2) {
         cout << "Usage: ./spellchecker <dict> [files...]" << endl;
     }
-    App app(argv[1], false);
+    App app(argv[1]);
     for (int i = 2; i < argc; ++i) {
         cout << endl << "Cheking file '" << argv[i] << "'. Unknown words:" << endl;
         app.run(argv[i]);
