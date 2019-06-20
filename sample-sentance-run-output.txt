@@ -1,11 +1,16 @@
 
 [kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt sample-sentance.txt 
 Reading dictionaty...
-Finished loading dictionary
+Finished loading dictionary:
+Words in dictionary file: 466551
+Unique words in dictionary: 455335
 
 Cheking file 'sample-sentance.txt'.
 Reading input file...
-Finished reading input file. Filtering words...
+Finished reading input file.
+Words in input file: 41
+Unique words in input file: 32
+Filtering words...
 The following words are not in the dictionary:
 caled
 Did you mean: 'called'?
@@ -24,6 +29,6 @@ Did you mean: 'polies'?
 woried
 Did you mean: 'worried'?
 
-real    0m2.446s
-user    0m2.306s
-sys     0m0.043s
+real    0m2.563s
+user    0m2.455s
+sys     0m0.047s

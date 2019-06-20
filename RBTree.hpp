@@ -23,8 +23,7 @@ RBTree<T>::RBNode::RBNode(std::weak_ptr<RBTree<T>> tree)
 
 template <class T>
 RBTree<T>::RBNode::~RBNode() {
-    if (m_key) {
-    }
+    // Delete all children by shared_ptr magic
 }
 
 template <class T>

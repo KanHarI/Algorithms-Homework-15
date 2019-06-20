@@ -1,11 +1,16 @@
 
 [kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt frankenstein.txt 
 Reading dictionaty...
-Finished loading dictionary
+Finished loading dictionary:
+Words in dictionary file: 466551
+Unique words in dictionary: 455335
 
 Cheking file 'frankenstein.txt'.
 Reading input file...
-Finished reading input file. Filtering words...
+Finished reading input file.
+Words in input file: 74991
+Unique words in input file: 7172
+Filtering words...
 The following words are not in the dictionary:
 1
 10
@@ -237,6 +242,6 @@ writeto
 yesternights
 youhe
 
-real    0m7.150s
-user    0m6.977s
-sys     0m0.030s
+real    0m2.891s
+user    0m2.685s
+sys     0m0.043s
