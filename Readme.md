@@ -7,7 +7,7 @@ lexicographical order, and removes all words that are in the dictionary. The
 utility displays all words not found in the dictionary, and suggestion of
 words that might have been the intended words in place of those typed.
 
-The utility checks the following criteria for word suggestions:
+The utility checks the following criteria for word suggestions (in the following priority):
 1. Words that are the same excpet for a letter appearing twice (e.g. 'businness' -> 'business').
 2. Words that are the same except for a swapped pair of letters (e.g. 'buisness' -> 'business').
 3. Words that are the same except for a double letter written once (e.g. 'busines' -> 'business').

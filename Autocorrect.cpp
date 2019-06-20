@@ -38,25 +38,6 @@ static list<string> findHomophonicWordsBy(string word, char a, char b) {
 	return results;
 }
 
-string Autocorrect::findHomophonicWords(string word) {
-	for (auto t : homophones) {
-		char a, b;
-		tie(a, b) = t;
-		for (auto mod_word : findHomophonicWordsBy(word, a, b)) {
-			if (m_dict.lookup(mod_word)) {
-				return mod_word;
-			}
-		}
-		std::swap(a, b);
-		for (auto mod_word : findHomophonicWordsBy(word, a, b)) {
-			if (m_dict.lookup(mod_word)) {
-				return mod_word;
-			}
-		}
-	}
-	return "";
-}
-
 
 string Autocorrect::findLetterDoubledWords(string word) {
 	for (size_t i = 0; i < word.length()-1; ++i) {
@@ -75,6 +56,25 @@ string Autocorrect::findDoubledroppedWords(string word) {
 		string mod_word = word.substr(0, i) + word[i] + word.substr(i, string::npos);
 		if (m_dict.lookup(mod_word)) {
 			return mod_word;
+		}
+	}
+	return "";
+}
+
+string Autocorrect::findHomophonicWords(string word) {
+	for (auto t : homophones) {
+		char a, b;
+		tie(a, b) = t;
+		for (auto mod_word : findHomophonicWordsBy(word, a, b)) {
+			if (m_dict.lookup(mod_word)) {
+				return mod_word;
+			}
+		}
+		std::swap(a, b);
+		for (auto mod_word : findHomophonicWordsBy(word, a, b)) {
+			if (m_dict.lookup(mod_word)) {
+				return mod_word;
+			}
 		}
 	}
 	return "";

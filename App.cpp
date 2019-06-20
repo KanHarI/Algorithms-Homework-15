@@ -25,21 +25,28 @@ App::App(std::string dict_path)
 App::~App() {}
 
 void App::run(string checked_path) {
-    std::shared_ptr<RBTree<std::string>> words_tree;
+    std::shared_ptr<RBTree<string>> words_tree;
+    Hashtable<string> tree_filter(hash, HASH_TABLE_SIZE);
     words_tree = RBTree<string>::createTree(strings_cmp_callback);
     FileReader fr(checked_path);
     string word;
     cout << "Reading input file..." << endl;
+    size_t num_words = 0;
+    size_t num_unique_words = 0;
     word = fr.getWord();
     while (word != "") {
-        try {
+        ++num_words;
+        if (!tree_filter.lookup(word)) {
+            ++num_unique_words;
+            tree_filter.insert(word);
             words_tree->insert(word);
         }
-        // Words can appear more then once in text!
-        catch (const KeyAlreadyExists& e) {}
         word  = fr.getWord();
     }
-    cout << "Finished reading input file. Filtering words..." << endl;
+    cout << "Finished reading input file." << endl;
+    cout << "Words in input file: " << num_words << endl;
+    cout << "Unique words in input file: " << num_unique_words << endl;
+    cout << "Filtering words..." << endl;
     auto it = words_tree->minimum();
     while (it && !it->isNil()) {
         if (m_dict.lookup(it->get())) {
@@ -64,17 +71,23 @@ void App::run(string checked_path) {
 }
 
 void App::read_dict(string dict_path) {
+    size_t num_words_in_dict = 0;
+    size_t num_words_in_dict_file = 0;
     FileReader fr(dict_path);
     cout << "Reading dictionaty..." << endl;
     string word = fr.getWord();
     while (word != "") {
         try {
+            ++num_words_in_dict_file;
             m_dict.insert(word);
+            ++num_words_in_dict;
         }
         // Some words are double in lower/upper case,
         // or they are the same as another word with non-alphanumeric characters in it.
         catch (const KeyAlreadyExists& e) {}
         word  = fr.getWord();
     }
-    cout << "Finished loading dictionary" << endl;
+    cout << "Finished loading dictionary:" << endl;
+    cout << "Words in dictionary file: " << num_words_in_dict_file << endl;
+    cout << "Unique words in dictionary: " << num_words_in_dict << endl;
 }
