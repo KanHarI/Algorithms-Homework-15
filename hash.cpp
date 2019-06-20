@@ -3,6 +3,7 @@
 
 using std::string;
 
+// Some prime number
 constexpr size_t MULTIPLIER = 701;
 
 size_t hash(std::string str) {

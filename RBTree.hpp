@@ -152,7 +152,7 @@ template <class T>
 direction RBTree<T>::RBNode::getDirectionFromParent() const {
     auto p = m_p.lock();
     if (!p) {
-        throw std::runtime_error("Root node is looking for parent :(");
+        throw std::runtime_error("Root node is looking for parent!");
     }
     if (p->m_l == m_self.lock()) {
         return direction::LEFT;
@@ -160,7 +160,7 @@ direction RBTree<T>::RBNode::getDirectionFromParent() const {
     if (p->m_r == m_self.lock()) {
         return direction::RIGHT;
     }
-    throw std::runtime_error("Parent does not know this node :(");
+    throw std::runtime_error("Parent does not know this node!");
 }
 
 template <class T>

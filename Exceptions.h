@@ -12,6 +12,5 @@
 
 DEF_EXCEPTION(std::runtime_error, KeyAlreadyExists);
 DEF_EXCEPTION(std::runtime_error, KeyNotFound);
-DEF_EXCEPTION(std::runtime_error, NotImplemented);
 
 #endif
