@@ -1,50 +1,18 @@
 
-[kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt frankenstein.txt 
+[kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt frankenstein.txt
 
 Reading dictionaty...
 Finished loading dictionary:
-Words in dictionary file: 466551
-Unique words in dictionary: 455335
+Words in dictionary file: 466548
+Unique words in dictionary: 455250
 
 Cheking file 'frankenstein.txt'.
 Reading input file...
 Finished reading input file.
-Words in input file: 74991
-Unique words in input file: 7172
+Words in input file: 74952
+Unique words in input file: 7138
 Filtering words...
 The following words are not in the dictionary:
-1
-10
-11
-11th
-12
-12th
-13
-13th
-14
-15
-16
-17
-18
-18th
-19
-20
-21
-22
-Did you mean: '2'?
-23
-24
-26th
-27th
-28th
-3
-3lst
-4
-5
-6
-7
-8
-9
 acti
 Did you mean: 'cati'?
 albertus
@@ -143,7 +111,6 @@ justines
 kindthey
 kirwins
 krempe
-l9
 labourthe
 landsledge
 latediscovered
@@ -243,6 +210,6 @@ writeto
 yesternights
 youhe
 
-real    0m2.709s
-user    0m2.530s
-sys     0m0.049s
+real    0m2.719s
+user    0m2.557s
+sys     0m0.043s
