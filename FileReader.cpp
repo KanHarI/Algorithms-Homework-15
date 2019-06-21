@@ -31,7 +31,7 @@ std::string FileReader::getWord() {
 string FileReader::processWord(string str) {
 	// Erase non alphanumeric characters
 	str.erase(std::remove_if(str.begin(), str.end(),
-		std::not1(std::ptr_fun((int(*)(int))std::isalnum))), str.end());
+		std::not1(std::ptr_fun((int(*)(int))std::isalpha))), str.end());
 	// covert to lower case
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
