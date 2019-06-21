@@ -1,5 +1,5 @@
 
-[kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt sample-sentance.txt 
+[kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt sample-sentence.txt 
 Reading dictionaty...
 Finished loading dictionary:
 Words in dictionary file: 466551
