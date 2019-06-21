@@ -3,8 +3,8 @@
 
 using std::string;
 
-// Some prime number
-constexpr size_t MULTIPLIER = 701;
+// Some prime number larger than a word and smaller then a dword
+constexpr size_t MULTIPLIER = 1000003;
 
 size_t hash(std::string str) {
 	// No great theory behind this, there is not much discussion about hashing
@@ -20,22 +20,12 @@ size_t hash(std::string str) {
 		// multiplication). We do not want words that end in the same 8
 		// letters to have the same hash!
 #if __x86_64__ || __ppc64__ // 64 bit
-		accumulator = ((accumulator & 0xFFFFFFFF00000000) >> 32) | (accumulator << 32);
-		accumulator = ((accumulator & 0xFFFF0000FFFF0000) >> 16) | ((accumulator & 0x0000FFFF0000FFFF) << 16);
-		accumulator = ((accumulator & 0xFF00FF00FF00FF00) >> 8) | ((accumulator & 0x00FF00FF00FF00FF) << 8);
-		accumulator = ((accumulator & 0xF0F0F0F0F0F0F0F0) >> 4) | ((accumulator & 0x0F0F0F0F0F0F0F0F) << 4);
-		accumulator = ((accumulator & 0xCCCCCCCCCCCCCCCC) >> 2) | ((accumulator & 0x3333333333333333) << 2);
-		accumulator = ((accumulator & 0xAAAAAAAAAAAAAAAA) >> 1) | ((accumulator & 0x5555555555555555) << 1);
-#else
-		accumulator = ((accumulator & 0xFFFF0000) >> 16) | (accumulator << 16);
-		accumulator = ((accumulator & 0xFF00FF00) >> 8) | ((accumulator & 0x00FF00FF) << 8);
-		accumulator = ((accumulator & 0xF0F0F0F0) >> 4) | ((accumulator & 0x0F0F0F0F) << 4);
-		accumulator = ((accumulator & 0xCCCCCCCC) >> 2) | ((accumulator & 0x33333333) << 2);
-		accumulator = ((accumulator & 0xAAAAAAAA) >> 1) | ((accumulator & 0x55555555) << 1);
+		accumulator ^= ((accumulator & 0xFFFF000000000000) >> 48) ^ accumulator;
+#else // 32 bit
+		accumulator ^= ((accumulator & 0xFFFF0000) >> 16);
 #endif
 		accumulator *= MULTIPLIER;
 		accumulator += c;
 	}
-	accumulator *= MULTIPLIER;
 	return accumulator;
 }
