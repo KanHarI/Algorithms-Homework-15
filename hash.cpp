@@ -20,7 +20,7 @@ size_t hash(std::string str) {
 		// multiplication). We do not want words that end in the same 8
 		// letters to have the same hash!
 #if __x86_64__ || __ppc64__ // 64 bit
-		accumulator ^= ((accumulator & 0xFFFF000000000000) >> 48) ^ accumulator;
+		accumulator ^= ((accumulator & 0xFFFF000000000000) >> 48);
 #else // 32 bit
 		accumulator ^= ((accumulator & 0xFFFF0000) >> 16);
 #endif
