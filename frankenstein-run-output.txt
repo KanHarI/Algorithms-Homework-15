@@ -1,5 +1,6 @@
 
 [kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt frankenstein.txt 
+
 Reading dictionaty...
 Finished loading dictionary:
 Words in dictionary file: 466551
@@ -242,6 +243,6 @@ writeto
 yesternights
 youhe
 
-real    0m2.816s
-user    0m2.625s
-sys     0m0.064s
+real    0m2.709s
+user    0m2.530s
+sys     0m0.049s

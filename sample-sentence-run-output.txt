@@ -1,11 +1,12 @@
 
-[kanhar@kanhar-pc Algorithms-Homework-17]$ time ./spellChecker english-dict.txt sample-sentence.txt 
+[kanhar@kanhar-pc Algorithms-Homework-17]$  time ./spellChecker english-dict.txt sample-sentence.txt
+
 Reading dictionaty...
 Finished loading dictionary:
 Words in dictionary file: 466551
 Unique words in dictionary: 455335
 
-Cheking file 'sample-sentance.txt'.
+Cheking file 'sample-sentence.txt'.
 Reading input file...
 Finished reading input file.
 Words in input file: 41
@@ -29,6 +30,6 @@ Did you mean: 'polies'?
 woried
 Did you mean: 'worried'?
 
-real    0m2.618s
-user    0m2.463s
-sys     0m0.053s
+real    0m2.537s
+user    0m2.413s
+sys     0m0.040s
